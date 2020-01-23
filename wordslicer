@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+
+from math import log
+import re
+import subprocess
+import sys
+from getopt import getopt
+import fileinput
+from collections import Counter
+import pickle
+import csv
+
+
+words_by_frequency = {}
+
+
+def wordsByFrequency(words):
+    return Counter(words)
+
+
+def getAllWords(text):
+    # Convert to lowercases
+    # text = text.lower()
+    
+    # Replace all none alphanumeric characters with spaces
+    text = re.sub(r'[^a-zA-Z0-9\s\n\.!]', ' ', text)
+    
+    # Break sentence in the token, remove empty tokens
+    return [token for token in text.split(" ") if token != ""]
+
+
+def save():
+    pickle.dump(words_by_frequency, open('freqs.pkl', 'wb'))
+
+def load():
+    global words_by_frequency
+    words_by_frequency = pickle.load(open('freqs.pkl', 'rb'))
+
+
+
+def train(filename):
+    text = ""
+    for line in fileinput.input(filename):
+        text += line
+
+    words = getAllWords(text)
+    
+    global words_by_frequency
+    words_by_frequency = wordsByFrequency(words)
+
+    save()
+
+
+
+def separate(filename):
+    load()
+
+    text = ""
+    for line in fileinput.input(filename):
+        text += line
+
+    # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
+    total_words = sum(words_by_frequency.values())
+    maxword = max(len(x) for x in words_by_frequency.keys())
+
+    wordcost = dict((word, log((count+1)*log(total_words))) for word, count in words_by_frequency.items())
+
+    # Find the best match for the i first characters, assuming cost has
+    # been built for the i-1 first characters.
+    # Returns a pair (match_cost, match_length).
+    def best_match(i):
+        candidates = enumerate(reversed(cost[max(0, i-maxword):i]))
+        return min((c + wordcost.get(text[i-k-1:i], 9e999), k+1) for k,c in candidates)
+
+
+    # Build the cost array.
+    cost = [0]
+    for i in range(1, len(text) + 1):
+        c, k = best_match(i)
+        cost.append(c)
+
+    # Backtrack to recover the minimal-cost string.
+    out = []
+    i = len(text)
+    while i>0:
+        c,k = best_match(i)
+        assert c == cost[i]
+        out.append(text[i-k:i])
+        i -= k
+
+    return " ".join(reversed(out))
+
+
+        
+
+
+
+# Setup
+opts, resto = getopt(sys.argv[1:], "t:d:")
+dop = dict(opts)
+
+
+if "-t" in dop: # train
+    train(dop["-t"])
+elif "-s" in dop: # separate
+    print(separate(dop["-d"]))
+else:
+    print("Make sure the parameters are correct.")
+
+
