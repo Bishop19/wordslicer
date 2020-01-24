@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from math import log
 import re
 import subprocess
@@ -7,18 +5,14 @@ import sys
 from getopt import getopt
 import fileinput
 from collections import Counter
-import pickle
-import csv
 
 
-words_by_frequency = {}
 
-
-def wordsByFrequency(words):
+def __wordsByFrequency(words):
     return Counter(words)
 
 
-def getAllWords(text):
+def __getAllWords(text):
     # Convert to lowercases
     # text = text.lower()
     
@@ -29,35 +23,19 @@ def getAllWords(text):
     return [token for token in text.split(" ") if token != ""]
 
 
-def save():
-    pickle.dump(words_by_frequency, open('freqs.pkl', 'wb'))
-
-def load():
-    global words_by_frequency
-    words_by_frequency = pickle.load(open('freqs.pkl', 'rb'))
-
-
 
 def train(filename):
     text = ""
     for line in fileinput.input(filename):
         text += line
 
-    words = getAllWords(text)
-    
-    global words_by_frequency
-    words_by_frequency = wordsByFrequency(words)
+    words = __getAllWords(text)
 
-    save()
+    return __wordsByFrequency(words)
 
 
 
-def separate(filename):
-    load()
-
-    text = ""
-    for line in fileinput.input(filename):
-        text += line
+def separate(words_by_frequency, text):
 
     # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
     total_words = sum(words_by_frequency.values())
@@ -95,16 +73,16 @@ def separate(filename):
 
 
 
-# Setup
-opts, resto = getopt(sys.argv[1:], "t:d:")
-dop = dict(opts)
+# # Setup
+# opts, resto = getopt(sys.argv[1:], "t:d:")
+# dop = dict(opts)
 
 
-if "-t" in dop: # train
-    train(dop["-t"])
-elif "-s" in dop: # separate
-    print(separate(dop["-d"]))
-else:
-    print("Make sure the parameters are correct.")
+# if "-t" in dop: # train
+#     train(dop["-t"])
+# elif "-s" in dop: # separate
+#     print(separate(dop["-d"]))
+# else:
+#     print("Make sure the parameters are correct.")
 
 
