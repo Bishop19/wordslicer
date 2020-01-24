@@ -1,5 +1,6 @@
 from math import log
 import re
+import pprint
 import subprocess
 import sys
 from getopt import getopt
@@ -17,10 +18,10 @@ def __getAllWords(text):
     # text = text.lower()
     
     # Replace all none alphanumeric characters with spaces
-    text = re.sub(r'[^a-zA-Z0-9\s\n\.!]', ' ', text)
+    #text = re.sub(r'[^a-zA-Z0-9\s\n\.!]', ' ', text)
     
     # Break sentence in the token, remove empty tokens
-    return [token for token in text.split(" ") if token != ""]
+    return re.findall(r'\w+',text)
 
 
 
@@ -31,12 +32,21 @@ def train(filename):
 
     words = __getAllWords(text)
 
-    return __wordsByFrequency(words)
+    with open('words.txt', 'w') as f:
+        for item in words:
+            f.write("%s\n" % item)
+    c = __wordsByFrequency(words)
+
+    with open('dict.txt', 'w') as f:
+        for item in c.keys():
+            f.write("%s\n" % item)
+    return c
 
 
 
 def separate(words_by_frequency, text):
 
+   
     # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
     total_words = sum(words_by_frequency.values())
     maxword = max(len(x) for x in words_by_frequency.keys())
