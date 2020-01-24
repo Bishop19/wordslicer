@@ -5,7 +5,7 @@ import sys
 from getopt import getopt
 import fileinput
 from collections import Counter
-
+import matplotlib.pyplot as plt
 
 
 def __wordsByFrequency(words):
@@ -69,7 +69,33 @@ def separate(words_by_frequency, text):
     return " ".join(reversed(out))
 
 
-        
+
+def plot(wrong, total):
+    # wrong_percentage = wrong/total
+    # correct_percentage = (total-wrong)/total
+    
+    labels = ['Wrong', 'Correct']
+    sizes = [wrong, (total-wrong)]
+    colors = ['lightcoral', 'limegreen']
+    explode = (0.1, 0)
+    fig1, ax1 = plt.subplots()
+    patches = plt.pie(sizes, explode=explode, autopct='%1.1f%%', colors=colors, shadow=False, startangle=90, wedgeprops={"edgecolor":"0",'linewidth': 1, 'antialiased': True})
+    plt.legend(patches[0], labels, loc="best")
+    ax1.axis('equal')
+    plt.tight_layout()
+    plt.show()
+
+def evaluate(output, correct):
+    output_words = __wordsByFrequency(__getAllWords(output))
+    words_correct = __wordsByFrequency(__getAllWords(correct))
+
+    total_words = sum(words_correct.values())
+    wrong_words = 0
+    
+    for word, occurences in output_words.items():
+        wrong_words = occurences - words_correct.get(word, 0)
+
+    plot(wrong_words, total_words)
 
 
 
@@ -88,7 +114,12 @@ if "-t" in dop: # train
         for line in fileinput.input(dop["-s"]):
             text += line
 
-        print(separate(model, text))
+        output = separate(model, text)
+        to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."
+        
+        print(output)
+        
+        evaluate(output, to_compare)
 
 else:
     print("Make sure the parameters are correct.")
