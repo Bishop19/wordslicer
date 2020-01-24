@@ -73,16 +73,24 @@ def separate(words_by_frequency, text):
 
 
 
-# # Setup
-# opts, resto = getopt(sys.argv[1:], "t:d:")
-# dop = dict(opts)
+# Setup for testing
 
+opts, resto = getopt(sys.argv[1:], "t:s:")
+dop = dict(opts)
 
-# if "-t" in dop: # train
-#     train(dop["-t"])
-# elif "-s" in dop: # separate
-#     print(separate(dop["-d"]))
-# else:
-#     print("Make sure the parameters are correct.")
+model = {}
+
+if "-t" in dop: # train
+    model = train(dop["-t"])
+    
+    if "-s" in dop: # separate
+        text = ""
+        for line in fileinput.input(dop["-s"]):
+            text += line
+
+        print(separate(model, text))
+
+else:
+    print("Make sure the parameters are correct.")
 
 
