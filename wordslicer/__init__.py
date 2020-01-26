@@ -46,7 +46,6 @@ def train(filename):
 
 def separate(words_by_frequency, text):
 
-   
     # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
     total_words = sum(words_by_frequency.values())
     maxword = max(len(x) for x in words_by_frequency.keys())
@@ -123,8 +122,23 @@ if "-t" in dop: # train
         text = ""
         for line in fileinput.input(dop["-s"]):
             text += line
+        x = 0
+        output = ""
+        while len(text)>0:
+            x = re.search(r'[!.,?;\'\n]', text)
+            if x != None: 
+                y = x.start()
+                if x.group(0) != '\n' and x.group(0) != '\'':
+                    output += separate(model, text[:y]) + x.group(0) +" "
+                    text = text[y+1:]
+                else:
+                    output += separate(model, text[:y]) + x.group(0)
+                    text = text[y+1:]     
+            else:
+                output += separate(model, text) + " "
+                break
+                
 
-        output = separate(model, text)
         to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."
         
         print(output)
