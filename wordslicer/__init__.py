@@ -35,22 +35,26 @@ def train(filename):
     # with open('words.txt', 'w') as f:
     #     for item in words:
     #         f.write("%s\n" % item)
-    c = __wordsByFrequency(words)
+    words_by_frequency = __wordsByFrequency(words)
 
     # with open('dict.txt', 'w') as f:
     #     for item in c.keys():
     #         f.write("%s\n" % item)
-    return c
-
-
-
-def separate(words_by_frequency, text):
 
     # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
     total_words = sum(words_by_frequency.values())
     maxword = max(len(x) for x in words_by_frequency.keys())
 
     wordcost = dict((word, log((rank+1)*log(total_words))) for rank, word in enumerate(words_by_frequency.keys()))
+
+    return (wordcost, maxword)
+
+
+
+def separate(model, text):
+
+    wordcost = model[0]
+    maxword = model[1]
 
     # Find the best match for the i first characters, assuming cost has
     # been built for the i-1 first characters.
@@ -78,10 +82,10 @@ def separate(words_by_frequency, text):
     return " ".join(reversed(out))
 
 
-def join(words_by_frequency, text):
+def join(model, text):
     text = re.sub(r' ', r'', text)
 
-    return separate(words_by_frequency, text)
+    return separate(model, text)
 
 
 def __plot(wrong, correct):    
