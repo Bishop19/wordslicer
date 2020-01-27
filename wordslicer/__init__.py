@@ -50,7 +50,7 @@ def separate(words_by_frequency, text):
     total_words = sum(words_by_frequency.values())
     maxword = max(len(x) for x in words_by_frequency.keys())
 
-    wordcost = dict((word, log((count+1)*log(total_words))) for word, count in words_by_frequency.items())
+    wordcost = dict((word, log((rank+1)*log(total_words))) for rank, word in enumerate(words_by_frequency.keys()))
 
     # Find the best match for the i first characters, assuming cost has
     # been built for the i-1 first characters.
@@ -146,7 +146,7 @@ if "-t" in dop: # train
                 break
 
         to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."      
-        print(output)        
+        #print(output)        
         evaluate(output, to_compare)
         save("output1", output)
 
