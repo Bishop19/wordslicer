@@ -32,14 +32,14 @@ def train(filename):
 
     words = __getAllWords(text)
 
-    with open('words.txt', 'w') as f:
-        for item in words:
-            f.write("%s\n" % item)
+    # with open('words.txt', 'w') as f:
+    #     for item in words:
+    #         f.write("%s\n" % item)
     c = __wordsByFrequency(words)
 
-    with open('dict.txt', 'w') as f:
-        for item in c.keys():
-            f.write("%s\n" % item)
+    # with open('dict.txt', 'w') as f:
+    #     for item in c.keys():
+    #         f.write("%s\n" % item)
     return c
 
 
@@ -78,12 +78,14 @@ def separate(words_by_frequency, text):
     return " ".join(reversed(out))
 
 
+def join(words_by_frequency, text):
+    text = re.sub(r' ', r'', text)
 
-def plot(wrong, total):
-    # wrong_percentage = wrong/total
-    # correct_percentage = (total-wrong)/total
-    
-    labels = ['Wrong', 'Correct']
+    return separate(words_by_frequency, text)
+
+
+def __plot(wrong, total):    
+    labels = [f'Wrong ({wrong})', f'Correct ({total-wrong})']
     sizes = [wrong, (total-wrong)]
     colors = ['lightcoral', 'limegreen']
     explode = (0.1, 0)
@@ -94,6 +96,7 @@ def plot(wrong, total):
     plt.tight_layout()
     plt.show()
 
+
 def evaluate(output, correct):
     output_words = __wordsByFrequency(__getAllWords(output))
     words_correct = __wordsByFrequency(__getAllWords(correct))
@@ -102,26 +105,30 @@ def evaluate(output, correct):
     wrong_words = 0
     
     for word, occurences in output_words.items():
-        wrong_words = occurences - words_correct.get(word, 0)
+        wrong_words += occurences - words_correct.get(word, 0)
 
-    plot(wrong_words, total_words)
+    __plot(wrong_words, total_words)
 
+
+def save(filename, text):
+    with open(filename, 'w') as f:
+        f.write(text)
 
 
 # Setup for testing
 
-opts, resto = getopt(sys.argv[1:], "t:s:")
+opts, resto = getopt(sys.argv[1:], "t:sj")
 dop = dict(opts)
 
 model = {}
 
 if "-t" in dop: # train
     model = train(dop["-t"])
-    
-    if "-s" in dop: # separate
-        text = ""
-        for line in fileinput.input(dop["-s"]):
-            text += line
+    text = ""
+    for line in fileinput.input(resto):
+        text += line
+
+    if "-s" in dop: # separate      
         x = 0
         output = ""
         while len(text)>0:
@@ -137,13 +144,17 @@ if "-t" in dop: # train
             else:
                 output += separate(model, text) + " "
                 break
-                
 
-        to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."
-        
-        print(output)
-        
+        to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."      
+        print(output)        
         evaluate(output, to_compare)
+        save("output1", output)
+
+    elif "-j" in dop:
+        to_compare2 = "My name is Frodo."
+        output2 = join(model, text)   
+        print(output2)
+        evaluate(output2, to_compare2)
 
 else:
     print("Make sure the parameters are correct.")
