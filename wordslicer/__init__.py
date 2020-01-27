@@ -84,9 +84,9 @@ def join(words_by_frequency, text):
     return separate(words_by_frequency, text)
 
 
-def __plot(wrong, total):    
-    labels = [f'Wrong ({wrong})', f'Correct ({total-wrong})']
-    sizes = [wrong, (total-wrong)]
+def __plot(wrong, correct):    
+    labels = [f'Wrong ({wrong})', f'Correct ({correct})']
+    sizes = [wrong, correct]
     colors = ['lightcoral', 'limegreen']
     explode = (0.1, 0)
     fig1, ax1 = plt.subplots()
@@ -101,13 +101,13 @@ def evaluate(output, correct):
     output_words = __wordsByFrequency(__getAllWords(output))
     words_correct = __wordsByFrequency(__getAllWords(correct))
 
-    total_words = sum(words_correct.values())
+    total_words = sum(output_words.values())
     wrong_words = 0
     
     for word, occurences in output_words.items():
         wrong_words += occurences - words_correct.get(word, 0)
 
-    __plot(wrong_words, total_words)
+    __plot(wrong_words, total_words - wrong_words)
 
 
 def save(filename, text):
@@ -132,7 +132,7 @@ if "-t" in dop: # train
         x = 0
         output = ""
         while len(text)>0:
-            x = re.search(r'[!.,?;\'\n]', text)
+            x = re.search(r'[!.,?;\'\n"()\-:]', text)
             if x != None: 
                 y = x.start()
                 if x.group(0) != '\n' and x.group(0) != '\'':
