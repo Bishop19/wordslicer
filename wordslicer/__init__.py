@@ -119,6 +119,25 @@ def save(filename, text):
         f.write(text)
 
 
+def main_separate(text):
+    x = 0
+    output = ""
+    while len(text)>0:
+        x = re.search(r'[!.,?;\'\n"()\-:]', text)
+        if x != None: 
+            y = x.start()
+            if x.group(0) != '\n' and x.group(0) != '\'':
+                output += separate(model, text[:y]) + x.group(0) +" "
+                text = text[y+1:]
+            else:
+                output += separate(model, text[:y]) + x.group(0)
+                text = text[y+1:]     
+        else:
+            output += separate(model, text) + " "
+            break
+    
+    return output
+
 # Setup for testing
 
 opts, resto = getopt(sys.argv[1:], "t:sj")
@@ -133,24 +152,10 @@ if "-t" in dop: # train
         text += line
 
     if "-s" in dop: # separate      
-        x = 0
-        output = ""
-        while len(text)>0:
-            x = re.search(r'[!.,?;\'\n"()\-:]', text)
-            if x != None: 
-                y = x.start()
-                if x.group(0) != '\n' and x.group(0) != '\'':
-                    output += separate(model, text[:y]) + x.group(0) +" "
-                    text = text[y+1:]
-                else:
-                    output += separate(model, text[:y]) + x.group(0)
-                    text = text[y+1:]     
-            else:
-                output += separate(model, text) + " "
-                break
-
+        output = main_separate(text)
         to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."      
-        #print(output)        
+      
+        print(output)        
         evaluate(output, to_compare)
         save("output1", output)
 
