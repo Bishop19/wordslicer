@@ -1,7 +1,0 @@
-README.md
-setup.py
-wordslicer
-wordslicer.egg-info/PKG-INFO
-wordslicer.egg-info/SOURCES.txt
-wordslicer.egg-info/dependency_links.txt
-wordslicer.egg-info/top_level.txt

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='wordslicer',  
-    version='0.1.3',
+    version='0.1',
     #scripts=['wordslicer'] ,
     author="Pedro Moreira, Nelson Sousa",
     author_email="a82364@alunos.uminho.pt, a82053@alunos.uminho.pt",

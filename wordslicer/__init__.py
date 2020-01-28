@@ -1,9 +1,5 @@
 from math import log
 import re
-import pprint
-import subprocess
-import sys
-from getopt import getopt
 import fileinput
 from collections import Counter
 import matplotlib.pyplot as plt
@@ -14,13 +10,6 @@ def __wordsByFrequency(words):
 
 
 def __getAllWords(text):
-    # Convert to lowercases
-    # text = text.lower()
-    
-    # Replace all none alphanumeric characters with spaces
-    #text = re.sub(r'[^a-zA-Z0-9\s\n\.!]', ' ', text)
-    
-    # Break sentence in the token, remove empty tokens
     return re.findall(r'\w+',text)
 
 
@@ -31,17 +20,8 @@ def train(filename):
         text += line
 
     words = __getAllWords(text)
-
-    # with open('words.txt', 'w') as f:
-    #     for item in words:
-    #         f.write("%s\n" % item)
     words_by_frequency = __wordsByFrequency(words)
 
-    # with open('dict.txt', 'w') as f:
-    #     for item in c.keys():
-    #         f.write("%s\n" % item)
-
-    # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
     total_words = sum(words_by_frequency.values())
     maxword = max(len(x) for x in words_by_frequency.keys())
 
@@ -51,8 +31,7 @@ def train(filename):
 
 
 
-def separate(model, text):
-
+def __separate(model, text):
     wordcost = model[0]
     maxword = model[1]
 
@@ -62,7 +41,6 @@ def separate(model, text):
     def best_match(i):
         candidates = enumerate(reversed(cost[max(0, i-maxword):i]))
         return min((c + wordcost.get(text[i-k-1:i], 9e999), k+1) for k,c in candidates)
-
 
     # Build the cost array.
     cost = [0]
@@ -80,6 +58,26 @@ def separate(model, text):
         i -= k
 
     return " ".join(reversed(out))
+
+
+def separate(model, text):
+    x = 0
+    output = ""
+    while len(text)>0:
+        x = re.search(r'[!.,?;\'\n"()\-:]', text)
+        if x != None: 
+            y = x.start()
+            if x.group(0) != '\n' and x.group(0) != '\'':
+                output += __separate(model, text[:y]) + x.group(0) +" "
+                text = text[y+1:]
+            else:
+                output += __separate(model, text[:y]) + x.group(0)
+                text = text[y+1:]     
+        else:
+            output += __separate(model, text) + " "
+            break
+    
+    return output
 
 
 def join(model, text):
@@ -118,54 +116,5 @@ def save(filename, text):
     with open(filename, 'w') as f:
         f.write(text)
 
-
-def main_separate(text):
-    x = 0
-    output = ""
-    while len(text)>0:
-        x = re.search(r'[!.,?;\'\n"()\-:]', text)
-        if x != None: 
-            y = x.start()
-            if x.group(0) != '\n' and x.group(0) != '\'':
-                output += separate(model, text[:y]) + x.group(0) +" "
-                text = text[y+1:]
-            else:
-                output += separate(model, text[:y]) + x.group(0)
-                text = text[y+1:]     
-        else:
-            output += separate(model, text) + " "
-            break
-    
-    return output
-
-# Setup for testing
-
-opts, resto = getopt(sys.argv[1:], "t:sj")
-dop = dict(opts)
-
-model = {}
-
-if "-t" in dop: # train
-    model = train(dop["-t"])
-    text = ""
-    for line in fileinput.input(resto):
-        text += line
-
-    if "-s" in dop: # separate      
-        output = main_separate(text)
-        to_compare = "My name is Frodo. Hello Gandalf. I was born in 1418! When Mr Bilbo Baggins of Bag End announced that he would shortly be celebrating."      
-      
-        print(output)        
-        evaluate(output, to_compare)
-        save("output1", output)
-
-    elif "-j" in dop:
-        to_compare2 = "My name is Frodo."
-        output2 = join(model, text)   
-        print(output2)
-        evaluate(output2, to_compare2)
-
-else:
-    print("Make sure the parameters are correct.")
 
 
